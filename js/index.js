@@ -8,10 +8,10 @@ const timer = document.querySelector(".timer")
 
 let showblArr = []
 let tasks;
-!localStorage.tasks ? tasks = [] : tasks = JSON.parse(localStorage.getItem("tasks")); //check and get from local
+let toArchiveTime = 3;
 let todosItem = [];
+!localStorage.tasks ? tasks = [] : tasks = JSON.parse(localStorage.getItem("tasks")); //check and get from local
 isNeedToShowComplited = true;
-let toArchiveTime = 2;
 
 
 class Task {
@@ -28,11 +28,10 @@ class Task {
         } else {
             return "";
         }
-        
     }
 }
 
-const upLocal = () => {                                     //get from local
+const upLocal = () => {                                     //get from local ${task.formatSeconds()}-42s
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
@@ -40,7 +39,7 @@ const creatItem = (task, index) => {
     return `
     <div class="todo-item ${(task.completed || task.await) ? 'checked' : 'unchecked' }" id="todo-item">
         <input onClick="completeTask(${index})" type="checkbox" class="checkbox" id="checkbox" ${(task.completed || task.await) ? 'checked' : ''}>
-        <div id="timer-${task.id}" class="timer">${task.formatSeconds()}</div>
+        <div id="timer-${task.id}" class="timer"></div>
         <p class="text ${(task.completed || task.await) ? 'text_checked' : ''}" id="text_checked"> ${task.descrip} </p>
         <div class="buttons">
             <button class="buttons__edit"></button>
@@ -59,6 +58,7 @@ const pushHtml = () => {
             upLocal();
         });
         todosItem = document.querySelectorAll(".todo-item");
+        
     }
 }
 
@@ -69,12 +69,12 @@ const goTimer = () => {
             if (item.leftSeconds <= 0) {
                 item.completed = true;
                 item.await = false;
+                pushHtml()
             } else {
                 item.leftSeconds--
             }
+        document.getElementById('timer-' + item.id).innerHTML = item.formatSeconds()
         })
-        pushHtml()
-        console.log(pandingTasks);
     }, 1000);
     }
 goTimer()
@@ -95,6 +95,7 @@ const completeTask = index => {
     // tasks[targetIndex].completed = !tasks[targetIndex].completed;
     if (task.completed) {
         tasks[targetIndex].completed = false;
+        // pushHtml();
     } else if (task.await) {
         tasks[targetIndex].await = false;
         cancelTimer(task)
@@ -115,7 +116,6 @@ const deleteTask = (index) => {
     upLocal();
 }
 
-
 function filtered(task) {
     if (isNeedToShowComplited) {
         return !task.completed
@@ -125,7 +125,6 @@ function filtered(task) {
 }
 
 //1. complited, 2. !complited 3. !complited && await
-
 
 activeBtn.addEventListener('click', () => {  //click and filter active
     isNeedToShowComplited = true;
@@ -160,10 +159,6 @@ const creatTask = (description) => {
     return new Task(id, description)
     
 }
-
-// const ffff = new Task(-1,'description')
-// ffff.formatSeconds()
-// console.log(ffff.formatSeconds());
 
 addBtn.addEventListener("click", () => {  //click btn and add task
     tasks.push(creatTask(input.value));
